@@ -1,0 +1,6 @@
+<p>你好 {{ user.username }},</p>
+<p>欢迎注册 星宇晨辉!</p>
+<p>为了确认您的账号，请点击下面的<a href="{{ url_for('auth.confirm', token=token, _external=True) }}">链接</a>:<p>
+<p>{{ url_for('auth.confirm', token=token, _external=True) }}</p>
+<p>星宇晨辉团队</p>
+<p>请勿回复本邮件</p>

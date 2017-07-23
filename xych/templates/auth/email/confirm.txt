@@ -1,0 +1,6 @@
+你好 {{ user.username }},
+欢迎注册 星宇晨辉!
+为了确认您的账号，请点击下面的链接
+{{ url_for('auth.confirm', token=token, _external=True) }}
+星宇晨辉团队
+请勿回复本邮件
