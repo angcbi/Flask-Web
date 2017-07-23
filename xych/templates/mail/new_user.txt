@@ -1,0 +1,2 @@
+感谢{{ user.username }} 注册星宇陈辉， 复:wq
+制
