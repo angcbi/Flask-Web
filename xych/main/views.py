@@ -9,6 +9,7 @@ from . import main
 from .forms import NameForm
 from .. import db
 from ..models import User
+from ..email import send_mail
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -20,8 +21,8 @@ def index():
             session['known'] = False
             db.session.add(user)
 
-            send_mail(username, '感谢您注册',
-                      'main/new_user', user=user)
+            send_mail(user.username, '感谢您注册',
+                      'mail/new_user', user=user)
         else:
             session['known'] = True
 

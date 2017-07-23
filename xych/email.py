@@ -2,8 +2,10 @@
 # coding=utf-8
 from threading import Thread
 
+from flask import render_template, current_app as app
+from flask_mail import Message
+
 from . import mail
-from ..manage import app
 
 
 def send_sync_email(app, msg):
