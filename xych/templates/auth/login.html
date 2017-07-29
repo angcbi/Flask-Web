@@ -10,6 +10,11 @@
    点击注册 
 </a>
 </p>
+<p>
+<a href="{{ url_for('auth.reset_password')  }}">
+   忘记密码 
+</a>
+</p>
 </div>
 <div class="col-md-4">
 {{ wtf.quick_form(form) }}

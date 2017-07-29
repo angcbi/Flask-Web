@@ -26,10 +26,17 @@ data-toggle="collapse" data-target=".navbar-collapse">
 </ul>
 
 <ul class="nav navbar-nav navbar-right">
-   {% if current_user.is_authenticated %}
-   <li><a href="{{ url_for('auth.logout') }}">退出</a></li>
-   {% else %}
+   {% if not current_user.is_authenticated %}
    <li><a href="{{ url_for('auth.login') }}">登录</a></li>
+   {% else %}
+   <li class="dropdown"><a href="#" class="drodown-toggle" data-toggle="dropdown">
+       个人资料<b class="caret"></b>
+   </a>
+   <ul class="dropdown-menu">
+       <li><a href="{{ url_for('auth.modify_password') }}">修改密码</a></li>
+       <li><a href="{{ url_for('auth.logout') }}">退出</a></li>
+   </li>
+   </ul>
    {% endif %}
 </ul>
 </div>

@@ -2,7 +2,7 @@
 # coding=utf-8
 from threading import Thread
 
-from flask import render_template, current_app as app
+from flask import render_template, current_app 
 from flask_mail import Message
 
 from . import mail
@@ -13,7 +13,8 @@ def send_sync_email(app, msg):
         mail.send(msg)
 
 def send_mail(to, subject, template, **kwargs):
-    msg = Message(app.config['MAIL_SUBJECT_PREFIX'] + subject,
+    app = current_app._get_current_object()
+    msg = Message(app.config['MAIL_SUBJECT_PREFIX'] + ' ' + subject,
                  sender=app.config['MAIL_SENDER'], recipients=[to])
 
     msg.body = render_template(template + '.txt', **kwargs)

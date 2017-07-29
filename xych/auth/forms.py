@@ -31,5 +31,20 @@ class RegisterForm(FlaskForm):
         if User.query.filter_by(username=field.data).first():
             raise ValidationError(u'昵称已存在')
 
+ 
+class ModifyPasswordForm(FlaskForm):
+    password = PasswordField(u'原密码', validators=[DataRequired()])
+    password1 = PasswordField(u'新密码', validators=[DataRequired(), EqualTo('password2', message=u'两次密码不一致')])
+    password2 = PasswordField(u'确认密码', validators=[DataRequired()])
+    submit = SubmitField(u'确认')
 
+
+class ResetPasswordForm(FlaskForm):
+    email = StringField(u'邮箱', validators=[DataRequired(), Email()])
+    submit = SubmitField(u'确定')
+
+class ResetForm(FlaskForm):
+    password = PasswordField(u'新密码', validators=[DataRequired(), EqualTo('password2', message=u'两次密码不一致')])
+    password2 = PasswordField(u'确认密码', validators=[DataRequired()])
+    submit = SubmitField(u'确定')
 

@@ -4,7 +4,7 @@ from flask import render_template, redirect, url_for, request, flash
 from flask_login import login_user, login_required, current_user, logout_user
 
 from . import auth
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, ModifyPasswordForm, ResetPasswordForm, ResetForm
 from .. import db
 from ..models import User
 from ..email import send_mail
@@ -44,8 +44,98 @@ def register():
         token = user.generate_confirmation_token()
         send_mail(user.email, '确认你的账号',
                   'auth/email/confirm', user=user, token=token)
-        flash(u'一份确认邮件已发送到您的邮箱，请查收.<a href="http://mail.{}">立即登录</a>'.format(user.email.split('@')[-1]))
+        flash(u'一份确认邮件已发送到您的邮箱，请查收.'.format(user.email.split('@')[-1]))
         return redirect(url_for('.login'))
 
     return render_template('auth/register.html', form=form)
 
+@login_required
+@auth.route('/confirm/<token>')
+def confirm(token):
+    if current_user.confirmed:
+        return redirect(url_for('main.index'))
+
+    if current_user.confirm(token):
+        flash(u'你已经确认你的账号')
+    else:
+        flash(u'确认链接无效或者过期')
+
+    return redirect(url_for('main.index'))
+
+@auth.before_app_request
+def before_request():
+    if current_user.is_authenticated\
+       and not current_user.confirmed \
+       and request.endpoint[:5] != 'auth.' \
+       and request.endpoint != 'status':
+        return redirect(url_for('auth.unconfirmed'))
+
+@login_required
+@auth.route('/unconfirmed')
+def unconfirmed():
+    if current_user.confirmed:
+        return redirect(url_for('main.index'))
+    return render_template('auth/unconfirmed.html', email_site='https://mail.' + current_user.email.split('@')[-1]) 
+
+
+@auth.route('/confirm')
+@login_required
+def resend_confirmed():
+    token = current_user.generate_confirmation_token()
+    send_mail(current_user.email, '确认你的账号', 'auth/email/confirm', 
+             user=current_user, token=token)
+    flash(u'一份确认邮件已发送到您的邮箱')
+    return redirect(url_for('main.index'))
+
+
+@auth.route('/ModifyPasswordForm', methods=['GET', 'POST'])
+@login_required
+def modify_password():
+    form = ModifyPasswordForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.password.data):
+            current_user.password = form.password1.data
+            db.session.add(current_user)
+            flash(u'修改密码成功,跳转到登录页面')
+            return redirect(url_for('.logout'))
+        else:
+            flash(u'原密码错误')
+
+    return render_template('auth/modify_password.html', form=form)
+
+@auth.route('/ResetPasswordForm', methods=['GET', 'POST'])
+def reset_password():
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None:
+            token = user.generate_confirmation_token() 
+            send_mail(form.email.data, '重置密码', 'auth/email/reset',\
+                      token=token, user=user, message=u'重置密码')
+            flash(u'一封重置密码的邮件已发送')
+            return render_template('auth/reset_password1.html', \
+                               email_site='http://mail.' + form.email.data.split('@')[-1])
+        else:
+            flash(u'账号不存在')
+
+    return render_template('auth/reset_password.html', form=form)
+
+@auth.route('/reset/<token>', methods=['GET', 'POST'])
+def reset(token):
+    form = ResetForm()
+    if form.validate_on_submit():
+        data = User.parse(token)
+        print data, '*'*50
+        if data:
+            user = User.query.get(data.get('confirm'))
+            if user is not None:
+                user.password = form.password.data
+                db.session.add(user)
+                flash(u'重置密码成功')
+                return redirect(url_for('auth.login'))
+            else:
+                flash(u'用户不存在')
+            
+        else:
+            flash(u'链接已失效')
+    return render_template('auth/reset.html', form=form)
