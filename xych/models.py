@@ -37,8 +37,11 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     
-    def generate_confirmation_token(self, expiration=3600):
+    def generate_confirmation_token(self, expiration=3600, ext=None):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
+
+        if ext is not None:
+            return s.dumps({'confirm': self.id, 'ext': ext})
         return s.dumps({'confirm': self.id})
 
 

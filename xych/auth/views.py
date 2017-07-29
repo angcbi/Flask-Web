@@ -139,3 +139,36 @@ def reset(token):
         else:
             flash(u'链接已失效')
     return render_template('auth/reset.html', form=form)
+
+
+@auth.route('/changeEmail/', methods=['GET', 'POST'])
+@login_required
+def change_email():
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        if not User.query.filter_by(email=form.email.data).first():
+            token = current_user.generate_confirmation_token(ext=form.email.data)
+            send_mail(form.email.data, '更换邮箱', 'auth/email/change',
+                     token=token, user=current_user, message=u'更换邮箱')
+            return render_template('auth/change_email1.html', email_site='http://mail.' + form.email.data.split('@')[-1])
+        else:
+            flash(u'邮箱已存在')
+
+    return render_template('auth/change_email.html', form=form)
+
+
+@auth.route('/change/<token>')
+def change(token):
+    data = User.parse(token)
+    user = User.query.get(data['confirm'])
+    new_email = data.get('ext')
+    if user and new_email:
+        user.email = new_email
+        db.session.add(user)
+        flash(u'修改邮箱成功')
+        return redirect(url_for('auth.login'))
+
+    flash(u'链接失效')
+    return render_template('auth/change.html')
+
+    
