@@ -1,30 +1,37 @@
-{ % extends "bootstrap/base.html" %  }
-{ % block title %  }Flasky{ % endblock %  }
-{ % block navbar %  }
-<div class="navbar navbar-inverse" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle"
-                                  data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/">Flasky</a>
-        </div>
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="/">Home</a></li>
-            </ul>
-        </div>
-    </div>
+{% extends "base.html" %}
+
+{% block title %}
+星宇晨辉 - 个人资料
+{% endblock %}
+
+{% block page_content %}
+<div class='page-header'>
+    <h1>{{  user.username }}</h1>
+    {% if user.name or user.location %}
+    <p>
+    {% if user.name %}{{  user.name  }}{% endif %}
+    {% if user.location %}
+    来自<a href="http://maps.google.com/?q={{ user.location  }}">{{ user.location }}</a>
+    {% endif %}
+    </p>
+    {% endif %}
+    {% if current_user.is_administrator() %}
+    <p><a href="mailto:{{ user.email }}">{{  user.email }}</a></p>
+    {% endif %}
+    {% if user.about_me %}<p>{{ user.about_me }}{% endif %}</p>
+    <p>
+    注册时间：{{ moment(user.member_since).format('LL') }}, 
+    上次登录：{{ moment(user.last_seen).fromNow() }}
+    </p>
+    <p>
+    {% if user == current_user %}
+    <a class="btn btn-default" href="{{ url_for('.edit_profile')}}" arget="_Blank">编辑个人资料</a>
+    {% endif %}
+    {% if current_user.is_administrator() %}
+        <a class="btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.id)}}" arget="_Blank">编辑个人资料[管理员]</a>
+    {% endif %}
+    </p>
+
 </div>
-{ % endblock %  }
-{ % block content %  }
-<div class="container">
-    <div class="page-header">
-        <h1>Hello, {{ name  }}!</h1>
-    </div>
-</div>
-{ % endblock %  }
+
+{% endblock %}
