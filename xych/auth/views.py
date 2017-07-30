@@ -6,8 +6,9 @@ from flask_login import login_user, login_required, current_user, logout_user
 from . import auth
 from .forms import LoginForm, RegisterForm, ModifyPasswordForm, ResetPasswordForm, ResetForm
 from .. import db
-from ..models import User
+from ..models import User, Permission
 from ..email import send_mail
+from ..decorators import admin_required, permission_required
 
 
 
@@ -172,3 +173,16 @@ def change(token):
     return render_template('auth/change.html')
 
     
+
+@auth.route('/admin')
+@login_required
+@admin_required
+def for_admin():
+    return 'for administrator'
+
+
+@auth.route('/moderator')
+@login_required
+@permission_required(Permission.MODERATE_COMMENTS)
+def for_moderators_only():
+    return 'for moder'

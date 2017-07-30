@@ -9,6 +9,7 @@ class config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     MAIL_SUBJECT_PREFIX = '[星宇晨辉] '
     MAIL_SENDER = '星宇晨辉管理员<vip_susan@sina.cn>'
+    XYCH_ADMIN = '1371998102@qq.com'
 
 
     @staticmethod
@@ -23,8 +24,10 @@ class Development(config):
     MAIL_USER_SSL = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'vip_susan@sina.cn'
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'VIP_SUSAN'
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URI') or \
+    #         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URI') or \
-            'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+            'mysql://web:web@localhost/r'
 
 
 class TestingConfig(config):
