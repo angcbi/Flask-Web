@@ -10,6 +10,7 @@ class config(object):
     MAIL_SUBJECT_PREFIX = '[星宇晨辉] '
     MAIL_SENDER = '星宇晨辉管理员<vip_susan@sina.cn>'
     XYCH_ADMIN = '1371998102@qq.com'
+    POSTS_PER_PAGE = 20
 
 
     @staticmethod
