@@ -50,8 +50,8 @@ def register():
 
     return render_template('auth/register.html', form=form)
 
-@login_required
 @auth.route('/confirm/<token>')
+@login_required
 def confirm(token):
     if current_user.confirmed:
         return redirect(url_for('main.index'))
