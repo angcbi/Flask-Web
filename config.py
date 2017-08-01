@@ -15,13 +15,13 @@ class config(object):
     @staticmethod
     def init_app(app):
         pass
-    
+
 
 class Development(config):
     DEBUG = True
     MAIL_SERVER = 'smtp.sina.cn'
     MAIL_PORT = 25
-    MAIL_USER_SSL = True
+    MAIL_USER_SSL = False
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'vip_susan@sina.cn'
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'VIP_SUSAN'
     # SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URI') or \

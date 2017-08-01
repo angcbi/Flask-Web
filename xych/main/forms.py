@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-from flask_wtf import FlaskForm 
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
@@ -10,7 +10,7 @@ from ..models import Role, User
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
-    # file = FileField(u'文件', validators=[FileRequired(),]) 
+    # file = FileField(u'文件', validators=[FileRequired(),])
     submit = SubmitField('Submit')
 
 
@@ -51,3 +51,6 @@ class EditProfileAdminForm(FlaskForm):
             User.query.filter_by(username=field.data).first():
             raise ValidationError(u'昵称已存在')
 
+class PostForm(FlaskForm):
+    body = TextAreaField(u'正文', validators=[DataRequired()])
+    submit = SubmitField(u'提交')

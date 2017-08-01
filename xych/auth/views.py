@@ -77,14 +77,14 @@ def before_request():
 def unconfirmed():
     if current_user.confirmed:
         return redirect(url_for('main.index'))
-    return render_template('auth/unconfirmed.html', email_site='https://mail.' + current_user.email.split('@')[-1]) 
+    return render_template('auth/unconfirmed.html', email_site='https://mail.' + current_user.email.split('@')[-1])
 
 
 @auth.route('/confirm')
 @login_required
 def resend_confirmed():
     token = current_user.generate_confirmation_token()
-    send_mail(current_user.email, '确认你的账号', 'auth/email/confirm', 
+    send_mail(current_user.email, '确认你的账号', 'auth/email/confirm',
              user=current_user, token=token)
     flash(u'一份确认邮件已发送到您的邮箱')
     return redirect(url_for('main.index'))
@@ -111,7 +111,7 @@ def reset_password():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None:
-            token = user.generate_confirmation_token() 
+            token = user.generate_confirmation_token()
             send_mail(form.email.data, '重置密码', 'auth/email/reset',\
                       token=token, user=user, message=u'重置密码')
             flash(u'一封重置密码的邮件已发送')
@@ -137,7 +137,7 @@ def reset(token):
                 return redirect(url_for('auth.login'))
             else:
                 flash(u'用户不存在')
-            
+
         else:
             flash(u'链接已失效')
     return render_template('auth/reset.html', form=form)
@@ -165,7 +165,7 @@ def change(token):
     user = User.query.get(data['confirm'])
     new_email = data.get('ext')
     if user and new_email:
-        user.email = new_email
+        user.change_email(new_email)
         db.session.add(user)
         flash(u'修改邮箱成功')
         return redirect(url_for('auth.login'))
@@ -173,7 +173,7 @@ def change(token):
     flash(u'链接失效')
     return render_template('auth/change.html')
 
-    
+
 
 @auth.route('/admin')
 @login_required
