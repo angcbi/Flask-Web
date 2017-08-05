@@ -90,7 +90,7 @@ def post(id):
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
     post = Post.query.get_or_404(id)
-    if current_user != post.author and not current_user.can(Permission.ADMINISTAER):
+    if current_user != post.author and not current_user.can(Permission.ADMINISTER):
         abort(403)
     form = PostForm()
     if form.validate_on_submit():

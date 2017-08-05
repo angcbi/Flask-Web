@@ -233,3 +233,41 @@ loginmanager.anonymous_user = AnonymousUser
 @loginmanager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+from datetime import datetime
+
+
+class Student(db.Model):
+    __tablename__ = 'students'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True)
+    pub_date = db.Column(db.DateTime, default=datetime.utcnow)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
+
+    def __repr__(self):
+        return '<Student %r>' % self.name
+
+class Course(db.Model):
+    __tablename__ = 'courses'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), index=True)
+    students = db.relationship('Student', backref='course', uselist=False)
+    #students = db.relationship(Student, backref='course', lazy='dynamic', uselist=False)
+
+    def __repr__(self):
+        return '<Course %r>' % self.name
+
+tags = db.Table('tags',
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
+    db.Column('page_id', db.Integer, db.ForeignKey('page.id'))
+)
+
+class Page(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tags = db.relationship('Tag', secondary=tags,
+        backref=db.backref('pages', lazy='dynamic'))
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
