@@ -4,7 +4,7 @@ from datetime import datetime
 
 from flask import (render_template, session,
                    redirect, url_for, flash, abort,
-                   request, current_app)
+                   request, current_app, make_response)
 from flask_login import login_required, current_user
 
 from . import main
@@ -24,11 +24,26 @@ def index():
         return redirect(url_for('.index'))
 
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    show_followed = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed', ''))
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
+
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
                 page, per_page=current_app.config['POSTS_PER_PAGE'],
                 error_out=False)
     posts = pagination.items
-    return render_template('index.html', form=form, posts=posts, pagination=pagination)
+
+    res = {
+        'form': form,
+        'posts': posts,
+        'pagination': pagination,
+        'show_followed': show_followed
+    }
+    return render_template('index.html', **res)
 
 @main.route('/user/<username>/')
 def user(username):
@@ -106,7 +121,7 @@ def edit(id):
 @login_required
 @permission_required(Permission.FOLLOW)
 def follow(username):
-    user = User.queyr.filter_by(username=username).frist()
+    user = User.query.filter_by(username=username).first()
     if user is None:
         flash(u'无效用户')
         return redirect(url_for('.index'))
@@ -115,6 +130,21 @@ def follow(username):
         return redirect(url_for('.index'))
     current_user.follow(user)
     flash(u'你正在关注 %s' % username)
+    return redirect(url_for('.user', username=username))
+
+@main.route('/unfollow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def unfollow(username):
+    user = User.queyr.filter_by(username=username).frist()
+    if user is None:
+        flash(u'无效用户')
+        return redirect(url_for('.index'))
+    if not current_user.is_following(user):
+        flash(u'你尚未关注该用户')
+        return redirect(url_for('.index'))
+    current_user.unfollow(user)
+    flash(u'你已取关 %s' % username)
     return redirect(url_for('.user', username=username))
 
 @main.route('/followers/<username>')
@@ -126,9 +156,38 @@ def followers(username):
     page = request.args.get('page', 1, type=int)
     pagination = user.followers.paginate(page,
         per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
-    follows = [{'user': item.user, 'timestamp': item.timestamp}
+    follows = [{'user': item.follower, 'timestamp': item.timestamp}
                for item in pagination.items]
-    return render_template('followers.html', user=user, title=u'我的关注着',
+    return render_template('followers.html', user=user, title="我的粉丝",
                            endpoint='.followers', pagination=pagination,
                            follows=follows)
+
+@main.route('/followed_by/<username>')
+def followed_by(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash(u'无效用户')
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followed.paginate(page,
+        per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
+    follows = [{'user': item.followed, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title=u'我的关注',
+                           endpoint='.followed_by', pagination=pagination,
+                           follows=follows)
+
+
+@main.route('/all')
+@login_required
+def show_all():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '', max_age=30*24*60*60)
+    return resp
+
+@main.route('/followdd')
+def show_followed():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    return resp
 

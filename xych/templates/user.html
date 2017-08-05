@@ -35,16 +35,16 @@
     </p>
     {% if current_user.can(Permission.FOLLOW) and current_user != user %}
         {% if not current_user.is_following(user) %}
-        <a href="{{ url_for('.follow', username=user.username) }} class="btn btn-primary">关注</a>
+        <a href="{{ url_for('.follow', username=user.username) }}" class="btn btn-primary">关注</a>
         {% else %}
-        <a href="{{ url_for('.unfollow', username=user.username) }} class="btn btn-default">取关</a>
+        <a href="{{ url_for('.unfollow', username=user.username) }}" class="btn btn-default">取关</a>
         {% endif %}
     {% endif %}
     <a href="{{ url_for('.followers', username=user.username) }}">
-        关注： <span class="badge">{{ user.followers.count() }}</span>
-    </a>
-    <a href="{{ url_for('.followers', username=user.username) }}">
-        粉丝： <span class="badge">{{ user.followed.count() }}</span>
+        粉丝： <span class="badge">{{ user.followers.count() - 1 }}</span>
+    </a>|
+    <a href="{{ url_for('.followed_by', username=user.username) }}">
+        关注： <span class="badge">{{ user.followed.count() - 1 }}</span>
     </a>
     {% if current_user.is_administrator() and current_user != user and user.is_following(current_user) %}
        | <span class="label label-default">关注我</span> 
