@@ -12,7 +12,7 @@ from .forms import NameForm, EditProfileForm, EditProfileAdminForm, PostForm
 from .. import db
 from ..models import User, Role, Permission, Post
 from ..email import send_mail
-from ..decorators import admin_required
+from ..decorators import admin_required, permission_required
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -101,3 +101,34 @@ def edit(id):
 
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
+
+@main.route('/follow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(username):
+    user = User.queyr.filter_by(username=username).frist()
+    if user is None:
+        flash(u'无效用户')
+        return redirect(url_for('.index'))
+    if current_user.is_following(user):
+        flash(u'你已关注该用户')
+        return redirect(url_for('.index'))
+    current_user.follow(user)
+    flash(u'你正在关注 %s' % username)
+    return redirect(url_for('.user', username=username))
+
+@main.route('/followers/<username>')
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash(u'无效用户')
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followers.paginate(page,
+        per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
+    follows = [{'user': item.user, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title=u'我的关注着',
+                           endpoint='.followers', pagination=pagination,
+                           follows=follows)
+
