@@ -84,6 +84,7 @@ class User(UserMixin, db.Model):
     followers = db.relationship('Follow', foreign_keys=[Follow.followed_id],
                                 backref=db.backref('followed', lazy='joined'),
                                 lazy='dynamic', cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -243,6 +244,7 @@ class Post(db.Model):
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     @staticmethod
     def generate_fake(count=100):
@@ -264,7 +266,7 @@ class Post(db.Model):
     def on_change_body(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
                         'em', 'i', 'li', 'ol', 'pre', 'string', 'ul',
-                        'h1', 'h2', 'h3', 'p', 'img', 'br']
+                        'h1', 'h2', 'h3', 'p', 'img', 'br', 'strong']
         attrs = {
             '*': ['class'],
             'a': ['href', 'rel'],
@@ -277,6 +279,32 @@ class Post(db.Model):
         return '<Post %r>' % self.body[0:10]
 
 db.event.listen(Post.body, 'set', Post.on_change_body)
+
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    disabled = db.Column(db.Boolean)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'string', 'ul',
+                        'h1', 'h2', 'h3', 'p', 'img', 'br', 'strong']
+        attrs = {
+            '*': ['class'],
+            'a': ['href', 'rel'],
+            'img': ['src', 'alt'],
+        }
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'), tags=allowed_tags, attributes=attrs, strip=True))
+
+db.event.listen(Comment.body, 'set', Comment.on_changed_body)
 
 
 class AnonymousUser(AnonymousUserMixin):
@@ -292,41 +320,4 @@ loginmanager.anonymous_user = AnonymousUser
 @loginmanager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-
-from datetime import datetime
-
-
-class Student(db.Model):
-    __tablename__ = 'students'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    pub_date = db.Column(db.DateTime, default=datetime.utcnow)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
-
-    def __repr__(self):
-        return '<Student %r>' % self.name
-
-class Course(db.Model):
-    __tablename__ = 'courses'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True)
-    students = db.relationship('Student', backref='course', uselist=False)
-    #students = db.relationship(Student, backref='course', lazy='dynamic', uselist=False)
-
-    def __repr__(self):
-        return '<Course %r>' % self.name
-
-tags = db.Table('tags',
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
-    db.Column('page_id', db.Integer, db.ForeignKey('page.id'))
-)
-
-class Page(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tags = db.relationship('Tag', secondary=tags,
-        backref=db.backref('pages', lazy='dynamic'))
-
-class Tag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
 
