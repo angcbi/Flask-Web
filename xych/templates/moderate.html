@@ -1,15 +1,16 @@
-{ % extends "base.html" %  }
-{ % import "_macros.html" as macros %  }
-{ % block title %  }星宇晨辉 - 评论管理{ % endblock %  }
-{ % block page_content %  }
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+
+{% block title %}星宇晨辉 - 评论管理{% endblock %}
+{% block page_content %}
 <div class="page-header">
     <h1>管理评论</h1>
 </div>
-{ % set moderate = True %  }
-{ % include '_comments.html' %  }
-{ % if pagination %  }
+{% set moderate = True %}
+{% include '_comments.html' %}
+{% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, '.moderate')  }}
+    {{ macros.pagination_widget(pagination, '.moderate') }}
 </div>
-{ % endif %  }
-{ % endblock %  }
+{% endif %}
+{% endblock %}
