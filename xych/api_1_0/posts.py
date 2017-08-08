@@ -37,7 +37,7 @@ def get_post(id):
 @api.route('/posts/', methods=['POST'])
 @permission_required(Permission.WRITE_ARTICLES)
 def new_post():
-    post = Post.from_json(request.json())
+    post = Post.from_json(request.json)
     post.author = g.current_user
     db.session.add(post)
     db.session.commit()
@@ -77,7 +77,7 @@ def get_post_comments(id):
 @permission_required(Permission.COMMENT)
 def new_posts_comments(id):
     post = Post.query.get_or_404(id)
-    comment = Comment.from_json(request.json())
+    comment = Comment.from_json(request.json)
     comment.author = g.current_user
     comment.post = post
     db.sesion.add(comment)

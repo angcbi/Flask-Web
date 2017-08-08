@@ -20,7 +20,7 @@ def verify_password(email_or_token, password):
 
     if password == '':
         g.current_user = User.verify_auth_token(email_or_token)
-        g.token_used = True
+        g.token_userd = True
         return g.current_user is not None
 
     user = User.query.filter_by(email=email_or_token).first()
@@ -28,7 +28,7 @@ def verify_password(email_or_token, password):
         return False
 
     g.current_user = user
-    g.token_used = False
+    g.token_userd = False
     return user.verify_password(password)
 
 
@@ -47,7 +47,7 @@ def before_request():
 
 @api.route('/token')
 def get_token():
-    if g.current_user.is_anonymous() or g.token_userd:
+    if g.current_user.is_anonymous or g.token_userd:
         return unauthorized(u'无效的认证')
     return jsonify({'token': g.current_user.generate_auth_token(
         expiration=3600), 'expiration': 3600})
