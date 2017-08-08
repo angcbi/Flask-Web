@@ -4,6 +4,7 @@
 from flask import jsonify
 
 from . import api
+from ..exceptions import ValidationError
 
 
 def bad_request(message):
@@ -28,4 +29,4 @@ def method_not_allowed(message):
 
 @api.errorhandler(ValidationError)
 def validation_error(e):
-    return bady_request(e.args[0])
+    return bad_request(e.args[0])
