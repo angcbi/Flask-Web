@@ -12,6 +12,8 @@ class config(object):
     XYCH_ADMIN = '1371998102@qq.com'
     POSTS_PER_PAGE = 20
     COMMENTS_PER_PAGE = 20
+    JWT_AUTH_URL_RULE = '/api/v1.1/token'
+    JWT_AUTH_URL_OPTIONS = {'methods': ['GET', 'POST']}
 
 
     @staticmethod
