@@ -371,3 +371,13 @@ loginmanager.anonymous_user = AnonymousUser
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def authenticate(email, password):
+    password = str(password)
+    user = User.query.filter_by(email=email).first()
+    if user is not None and user.verify_password(password):
+        return user
+
+def identity(payload):
+    user_id = payload['identity']
+    return User.query.get(user_id)
+

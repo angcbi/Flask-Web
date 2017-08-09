@@ -37,6 +37,14 @@ def get_post(id):
 @api.route('/posts/', methods=['POST'])
 @permission_required(Permission.WRITE_ARTICLES)
 def new_post():
+    print 'json', request.json
+    print '*' * 50
+    print 'get_json', request.get_json()
+    print '*' * 50
+    print 'form', request.form
+    print '*' * 50
+    print 'data', request.get_data()
+
     post = Post.from_json(request.json)
     post.author = g.current_user
     db.session.add(post)
