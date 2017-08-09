@@ -2,3 +2,5 @@
 migrations/
 *.sqlite
 .idea
+.coverage
+htmlcov/

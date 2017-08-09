@@ -4,14 +4,16 @@ import os
 
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
+from flask_jwt import JWT
 
 from xych import create_app, db
-from xych.models import User, Role, Post
+from xych.models import User, Role, Post, authenticate, identity
 
 
 app = create_app(os.getenv('APP_CONFIG') or 'default')
 manager = Manager(app)
 migrate = Migrate(app, db)
+jwt = JWT(app, authenticate, identity)
 
 def make_shell_context():
     return dict(app=app, db=db, User=User, Role=Role, Post=Post)
