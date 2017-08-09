@@ -31,6 +31,31 @@ class Development(config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URI') or \
             'mysql://web:web@localhost/r'
 
+class UnixDevelopment(Development):
+    @classmethod
+    def init_app(cls, app):
+        Development.init_app(app)
+
+        import logging
+        from logging.handlers import SMTPHandler
+        credentials, secure = None, None
+        if getattr(cls, 'MAIL_USERNAME', None) is not None:
+            credentials = (cls.MAIL_USERNAME, cls.MAIL_PASSWORD)
+            if getattr(cls, 'MAIL_USE_TLS', None):
+                secure = ()
+
+            mail_handler = SMTPHandler(
+                mailhost=(cls.MAIL_SERVER, cls.MAIL_PORT),
+                fromaddr=cls.MAIL_SENDER,
+                toaddrs=['vip_susan@sina.cn'],
+                subject=cls.MAIL_SUBJECT_PREFIX + ' App Error',
+                credentials=credentials,
+                secure=secure
+            )
+            # mail_handler.setLevel(logging.ERROR)
+            mail_handler.setLevel(logging.DEBUG)
+            app.logger.addHandler(mail_handler)
+
 
 class TestingConfig(config):
     TESTING = True
@@ -48,5 +73,5 @@ config = {
     'testing': TestingConfig,
     'production': ProductionConfig,
 
-    'default': Development,
+    'default': UnixDevelopment,
 }
