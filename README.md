@@ -12,4 +12,7 @@
     3. 登录视图装饰器
     4. 获取登录用户
 
+## REST
+    采用Flask-RESTful 重写API
+
 
