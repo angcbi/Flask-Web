@@ -247,6 +247,16 @@ class User(UserMixin, db.Model):
         return self.followers.filer_by(
             follower_id=user.id).first() is not None
 
+    @staticmethod
+    def authenticate(email, password):
+        u = User.query.filter_by(email=email).first()
+        if u is not None and u.verify_password(password):
+            return u
+    @staticmethod
+    def identity(payload):
+        user_id = payload['identity']
+        return User.query.get(user_id)
+
     def __repr__(self):
         return '<User %r>' % self.username
 

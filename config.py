@@ -4,7 +4,8 @@ import os
 basedir = os.path.dirname(os.path.abspath(__file__))
 
 class config(object):
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'IOS3D-BLIE3R-CLDO!-'
+    # SECRET_KEY = os.environ.get('SECRET_KEY') or 'IOS3D-BLIE3R-CLDO!-'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'IOS3DBLIE3RCLDO'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     MAIL_SUBJECT_PREFIX = '[星宇晨辉] '
@@ -89,7 +90,7 @@ class ProductionConfig(config):
         from loggint.handlers import SMTPHandler
         credentials = None
         secure = None
-        
+
         if getattr(cls, 'MAIL_USERNAME', None) is not None:
             credentials = (cls.MAIL_USERNAME, cls.MAIL_PASSWORD)
             if getattr(cls, 'MAIL_USE_TLS', None):

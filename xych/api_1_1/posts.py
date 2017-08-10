@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from flask import request
-
-from flask_jwt import jwt_required, current_identity
+from flask import request, g
 
 from . import api
+from .decorators import c_jwt_required
 
 
 @api.route('/protected', methods=['GET', 'POST'])
-@jwt_required()
+@c_jwt_required
 def protected():
     print 'json', request.json, type(request.json)
     print '*' * 50
@@ -20,4 +19,4 @@ def protected():
     print 'form', request.form, type(request.form)
     print '*' * 50
     print 'data', request.data, type(request.data)
-    return '%s' % current_identity
+    return '%s' % g.c_current_user
