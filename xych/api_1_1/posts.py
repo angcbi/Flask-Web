@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 from flask import request, g
+from flask_login import current_user
 
 from . import api
 from .decorators import c_jwt_required
@@ -19,4 +20,4 @@ def protected():
     print 'form', request.form, type(request.form)
     print '*' * 50
     print 'data', request.data, type(request.data)
-    return '%s' % g.c_current_user
+    return '%s' % current_user
