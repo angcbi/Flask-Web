@@ -3,8 +3,7 @@
 import os
 basedir = os.path.dirname(os.path.abspath(__file__))
 
-class config(object):
-    # SECRET_KEY = os.environ.get('SECRET_KEY') or 'IOS3D-BLIE3R-CLDO!-'
+class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'IOS3DBLIE3RCLDO'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
@@ -25,7 +24,7 @@ class config(object):
         pass
 
 
-class Development(config):
+class Development(Config):
     DEBUG = True
     MAIL_SERVER = 'smtp.sina.cn'
     MAIL_PORT = 25
@@ -72,13 +71,13 @@ class UnixDevelopment(Development):
 
 
 
-class TestingConfig(config):
+class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URI') or \
             'sqlite:///' + os.path.join(basedir, 'data-test.sqlite')
 
 
-class ProductionConfig(config):
+class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI') or \
             'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 
@@ -110,7 +109,7 @@ class ProductionConfig(config):
 class UnixConfig(ProductionConfig):
     @classmethod
     def init_app(cls, app):
-        Production.init_app(app)
+        ProductionConfig.init_app(app)
 
         import logging
         from logging.handlers import SysLogHandler

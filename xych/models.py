@@ -381,6 +381,16 @@ loginmanager.anonymous_user = AnonymousUser
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@loginmanager.request_loader
+def load_user_from_request(request):
+    token = request.headers.get('Authorization')
+    if token:
+        from .api_1_1.auth import parse_token
+        payload = parse_token(token)
+        if payload:
+            return User.identity(payload)
+
+
 def authenticate(email, password):
     password = str(password)
     user = User.query.filter_by(email=email).first()

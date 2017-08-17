@@ -43,11 +43,14 @@ def deploy():
     from xych.models import User, Role
 
     upgrade()
-    
+
     Role.insert_roles()
     User.add_self_follows()
 
-    
+@manager.command
+def map():
+    for index, item in enumerate(app.url_map.iter_rules(), 1):
+        print '{}, Rule: {}, methods: {}, endpoint: {}'.format(index, item.rule, item.methods, item.endpoint)
 
 
 if __name__ == '__main__':
