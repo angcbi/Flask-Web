@@ -401,3 +401,11 @@ def identity(payload):
     user_id = payload['identity']
     return User.query.get(user_id)
 
+
+class OAuthClient(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(32), index=True)
+    source = db.Column(db.String(32), index=True)  # weibo/qq/baidu
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('User', backref='clients')
+    create_time = db.Column(db.DateTime, default=datetime.utcnow)

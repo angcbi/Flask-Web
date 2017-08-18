@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
-from flask import render_template, redirect, url_for, request, flash
+import requests
+from flask import render_template, redirect, url_for, request, flash, session, jsonify, g
 from flask_login import login_user, login_required, current_user, logout_user
 
 from . import auth
 from .forms import LoginForm, RegisterForm, ModifyPasswordForm, ResetPasswordForm, ResetForm
-from .. import db
-from ..models import User, Permission
+from .. import db, weibo
+from ..models import User, Permission, OAuthClient
 from ..email import send_mail
 from ..decorators import admin_required, permission_required
 
@@ -19,6 +20,10 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
+            if getattr(g, 'oauth', None) is not None:
+                uuid, source = g.oauth
+                oauth_client = OAuthClient(uuid=uuid, source=source, user=user)
+                db.session.add(oauth_client)
             return redirect(request.args.get('next') or url_for('main.index'))
 
         flash(u'无效的账号或密码')
@@ -42,6 +47,10 @@ def register():
                     password=form.password.data)
         db.session.add(user)
         db.session.commit()
+        if getattr(g, 'oauth', None) is not None:
+            uuid, source = g.oauth
+            oauth_client = OAuthClient(uuid=uuid, source=source, user=user)
+            db.session.add(oauth_client)
         token = user.generate_confirmation_token()
         send_mail(user.email, '确认你的账号',
                   'auth/email/confirm', user=user, token=token)
@@ -187,3 +196,42 @@ def for_admin():
 @permission_required(Permission.MODERATE_COMMENTS)
 def for_moderators_only():
     return 'for moder'
+
+
+@auth.route('/weibo_login')
+def weibo_login():
+    if 'weibo_oauth' in session:
+        access_token = session['weibo_oauth'][0]
+        params = {'access_token': access_token}
+        resp = weibo.get('/2/account/get_uid.json', params=params)
+        if resp.status == requests.code.ok and 'error_code' not in resp.json():
+            oauth_relation = OAuthClient.query.filter_by(uuid=resp.json()['uid'], source='weibo').first()
+            if oauth_relation is None:
+                return redirect(url_for('.register'))
+
+            user = oauth_relation.user
+            flash(u'登录成功')
+            login_user(user)
+            return redirect(url_for('main.index'))
+    next_url = request.args.get('next') or request.referrer or None
+    return weibo.authorize(
+        callback=url_for('.authorized', next=next_url, _external=True)
+    )
+
+@auth.route('/authorized')
+def authorized():
+    resp = weibo.authorized_response()
+    if resp is None:
+        return 'Access deny: reason=%s, error=%s' %(
+            request.args['error_reason'],
+            request.args['error_description']
+        )
+    session['weibo_oauth'] = (resp['access_token'], '')
+    g.oauth = (resp['uid'], 'weibo')
+    # return redirect(url_for('.weibo_login'))
+    return jsonify(resp)
+
+@weibo.tokengetter
+def get_oauth_token():
+    return session.get('weibo_oauth')
+

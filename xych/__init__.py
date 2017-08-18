@@ -7,6 +7,7 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_pagedown import PageDown
+from flask_oauthlib.client import OAuth
 
 from config import config
 
@@ -20,6 +21,20 @@ loginmanager.session_protection = 'strong'
 loginmanager.login_view = 'auth.login'
 loginmanager.login_message = u'请先登录'
 pagedown = PageDown()
+oauth = OAuth()
+weibo = oauth.remote_app(
+    'weibo',
+    app_key='WEIBO'
+)
+
+def change_weibo_header(uri, headers, body):
+    auth = headers.get('Authorization')
+    if auth:
+        auth = auth.replace('Bearer', 'OAuth2')
+        headers['Authorization'] = auth
+    return uri, headers, body
+
+weibo.pre_request = change_weibo_header
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -32,6 +47,7 @@ def create_app(config_name):
     db.init_app(app)
     loginmanager.init_app(app)
     pagedown.init_app(app)
+    oauth.init_app(app)
 
     from .main import main as main_blueprint
     from .auth import auth as auth_blueprint
@@ -39,7 +55,7 @@ def create_app(config_name):
     from .api_1_1 import api as api_1_1_blueprint
 
     app.register_blueprint(main_blueprint)
-    app.register_blueprint(auth_blueprint, url_prefix='/auth/')
+    app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
     app.register_blueprint(api_1_1_blueprint, url_prefix='/api/v1.1')
 
