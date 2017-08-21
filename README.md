@@ -10,6 +10,7 @@
 
 ## PyJWT
  采用PyJWT，实现自定义JWT认证功能。支持
+
     1. 自定义JWT声明
     2. 刷新token
     3. 登录视图装饰器
@@ -17,6 +18,7 @@
 
 ## OAuth Client 
 采用Flask-OAuthlib实现新浪微博登录
+
     1. 需先在[微博开发平台](http://open.weibo.com/development)注册应用，设置回调地址和测试账号
     2. 授权成功后，在session中设置对应的值，关联本地系统账号(注册或登录)
     3. 管理后，即可用微博登录
