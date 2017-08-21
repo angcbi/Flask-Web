@@ -17,6 +17,15 @@ class Config(object):
     SLOW_DB_QUERY_TIME = 0.1
     JWT_AUTH_URL_RULE = '/api/v1.1/token'
     JWT_AUTH_URL_OPTIONS = {'methods': ['GET', 'POST']}
+    WEIBO = {
+        'consumer_key': os.getenv('WEIBO_CLIENT_ID') or '1216536468',
+        'consumer_secret': os.getenv('WEIBO_CLIENT_SECRET') or '1111',
+        'request_token_params': dict(scope='email'),
+        'base_url': 'https://api.weibo.com',
+        'request_token_url': None,
+        'access_token_url': '/oauth2/access_token',
+        'authorize_url': '/oauth2/authorize',
+    }
 
 
     @staticmethod

@@ -15,8 +15,16 @@
    忘记密码 
 </a>
 </p>
+{% if auth %}
+<p style="font-weight:900"> 验证成功， 请绑定或注册账号</p>
+{% endif %}
 </div>
 <div class="col-md-4">
 {{ wtf.quick_form(form) }}
+<p style="text-align:right">
+<a href="{{ url_for('auth.weibo_login')  }}">
+    <img src="{{ url_for('static', filename='weibo.png')}}" alt="">微博登录
+</a>
+</p>
 </div>
 {% endblock %}
