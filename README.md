@@ -4,11 +4,12 @@
 是学习Flask开发的一个记录
 * 除了实现<<Flask Web开发>>介绍的功能外，也实现了其他功能
 
+
 ## Flask-JWT
 集成Flask-JWT，采用JWT实现API的认证功能
 
 ## PyJWT
-采用PyJWT，实现自定义JWT认证功能。支持
+ 采用PyJWT，实现自定义JWT认证功能。支持
     1. 自定义JWT声明
     2. 刷新token
     3. 登录视图装饰器
