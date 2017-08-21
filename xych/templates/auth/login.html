@@ -15,6 +15,9 @@
    忘记密码 
 </a>
 </p>
+{% if auth %}
+<p style="font-weight:900"> 验证成功， 请绑定或注册账号</p>
+{% endif %}
 </div>
 <div class="col-md-4">
 {{ wtf.quick_form(form) }}

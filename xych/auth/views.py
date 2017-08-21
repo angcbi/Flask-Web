@@ -20,7 +20,9 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
+            print g.oauth
             if getattr(g, 'oauth', None) is not None:
+                print g.oauth
                 uuid, source = g.oauth
                 oauth_client = OAuthClient(uuid=uuid, source=source, user=user)
                 db.session.add(oauth_client)
@@ -28,7 +30,8 @@ def login():
 
         flash(u'无效的账号或密码')
 
-    return render_template('auth/login.html', form=form)
+    auth = request.args.get('auth', 0, type=int)
+    return render_template('auth/login.html', form=form, auth=auth)
 
 @auth.route('/logout')
 @login_required
@@ -74,6 +77,15 @@ def confirm(token):
 
 @auth.before_app_request
 def before_request():
+    # 检查是否有weibo的授权session存在，存在获取uid,保存到g.oauth中，access_token过期，删除session
+    if 'weibo_oauth' in session:
+        access_token = session['weibo_oauth'][0]
+        resp = weibo.get('/2/account/get_uid.json' + '?access_token=' + access_token)
+        if resp.status == requests.codes.ok and 'error_code' not in resp.data:
+            g.oauth = (resp.data['uid'], 'weibo')
+        else:
+            session.pop('weibo_oauth')
+
     if current_user.is_authenticated:
         current_user.ping()
         if not current_user.confirmed \
@@ -201,21 +213,19 @@ def for_moderators_only():
 @auth.route('/weibo_login')
 def weibo_login():
     if 'weibo_oauth' in session:
-        access_token = session['weibo_oauth'][0]
-        params = {'access_token': access_token}
-        resp = weibo.get('/2/account/get_uid.json', params=params)
-        if resp.status == requests.code.ok and 'error_code' not in resp.json():
-            oauth_relation = OAuthClient.query.filter_by(uuid=resp.json()['uid'], source='weibo').first()
+            uid, source = g.oauth
+            print session, g.oauth
+            oauth_relation = OAuthClient.query.filter_by(uuid=uid, source='weibo').first()
             if oauth_relation is None:
-                return redirect(url_for('.register'))
+                return redirect(url_for('.login', auth=1))
 
             user = oauth_relation.user
-            flash(u'登录成功')
             login_user(user)
+            flash(u'登录成功')
             return redirect(url_for('main.index'))
-    next_url = request.args.get('next') or request.referrer or None
+    # next_url = request.args.get('next') or request.referrer or None
     return weibo.authorize(
-        callback=url_for('.authorized', next=next_url, _external=True)
+        callback=url_for('.authorized',  _external=True)
     )
 
 @auth.route('/authorized')
@@ -228,8 +238,9 @@ def authorized():
         )
     session['weibo_oauth'] = (resp['access_token'], '')
     g.oauth = (resp['uid'], 'weibo')
-    # return redirect(url_for('.weibo_login'))
-    return jsonify(resp)
+    print g.oauth
+    return redirect(url_for('.weibo_login'))
+    # return jsonify(resp)
 
 @weibo.tokengetter
 def get_oauth_token():

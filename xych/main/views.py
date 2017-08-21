@@ -4,7 +4,7 @@ from datetime import datetime
 
 from flask import (render_template, session,
                    redirect, url_for, flash, abort,
-                   request, current_app, make_response)
+                   request, current_app, make_response, g)
 from flask_login import login_required, current_user
 from flask_sqlalchemy import get_debug_queries
 
