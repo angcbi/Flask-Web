@@ -39,7 +39,7 @@ class Development(Config):
     MAIL_PORT = 25
     MAIL_USER_SSL = False
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'vip_susan@sina.cn'
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'VIP_SUSAN'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or '1234'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URI') or \
             'mysql://web:web@localhost/r'
 
